@@ -12,6 +12,8 @@ functions:
     handler: src/app.handler
     events:
       - httpApi: '*'
+    environment:
+      DB_URL: ${env:DB_URL}
 
 useDotenv: true
 
