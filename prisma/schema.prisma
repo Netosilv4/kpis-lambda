@@ -1,0 +1,32 @@
+datasource db {
+  provider = "postgres"
+  url      = "postgres://vgtwfcfq:fElKdNgKC_xiX76x7Yk2BJJAlQEYOolZ@kashin.db.elephantsql.com/vgtwfcfq"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["rhel-openssl-1.0.x", "debian-openssl-1.1.x", "native"]
+}
+
+model Empregado {
+  id                  String              @id @default(cuid())
+  nome                String
+  email               String
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @default(now())
+  status              String              @default("ATIVO")
+  cargo               String
+  historico HistoricoEmpregado?
+  emailGestor         String?
+
+  @@map("empregados")
+}
+
+model HistoricoEmpregado {
+  empregadoId   String    @unique
+  dataDeAdmissao DateTime  @default(now())
+  dataDeRecisao DateTime? 
+  empregado      Empregado @relation(fields: [empregadoId], references: [id])
+
+  @@map("historicoEmpregado")
+}

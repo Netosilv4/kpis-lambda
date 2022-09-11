@@ -1,0 +1,18 @@
+org: netos2
+app: kpis-lambda
+service: kpis-lambda
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+functions:
+  api:
+    handler: src/app.handler
+    events:
+      - httpApi: '*'
+      
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
