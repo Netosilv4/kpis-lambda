@@ -13,7 +13,7 @@ functions:
     events:
       - httpApi: '*'
     environment:
-      DB_URL: ${env:DB_URL}
+      DB_URL: ${params:DB_URL}
 
 useDotenv: true
 
