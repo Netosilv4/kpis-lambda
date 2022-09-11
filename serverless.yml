@@ -12,7 +12,9 @@ functions:
     handler: src/app.handler
     events:
       - httpApi: '*'
-      
+
+useDotenv: true
+
 plugins:
   - serverless-plugin-typescript
   - serverless-offline
