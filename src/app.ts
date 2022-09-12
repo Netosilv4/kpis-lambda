@@ -4,6 +4,11 @@ import cors from 'cors'
 import authRoutes from './modules/auth/routes';
 import { errorMiddleware } from './middlewares/errorHandler';
 import chartRoutes from './modules/charts/routes';
+import multer from 'multer';
+import { populateHandler } from './modules/populate';
+import rescue from 'express-rescue';
+
+const upload = multer({ dest: 'temp/uploads/' });
 
 const app = express();
 
@@ -11,9 +16,7 @@ app.use(express.json());
 
 app.use(cors());
 
-app.get("/teste", (req, res) => {
-  res.status(200).json({ message: "Hello World" })
-});
+app.post("/populate", upload.single("file"), populateHandler);
 
 app.use(chartRoutes)
 

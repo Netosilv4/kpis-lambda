@@ -4,29 +4,29 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["rhel-openssl-1.0.x", "debian-openssl-1.1.x", "native"]
 }
 
 model Empregado {
-  id                  String              @id @default(cuid())
-  nome                String
-  email               String
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @default(now())
-  status              String              @default("ATIVO")
-  cargo               String
-  historico HistoricoEmpregado?
-  emailGestor         String?
+  id           String              @id @default(cuid())
+  nome         String
+  email        String
+  created_at   DateTime            @default(now())
+  updated_at   DateTime            @default(now())
+  status       String              @default("ATIVO")
+  cargo        String
+  historico    HistoricoEmpregado?
+  email_gestor String?
 
   @@map("empregados")
 }
 
 model HistoricoEmpregado {
-  empregadoId   String    @unique
-  dataDeAdmissao DateTime  @default(now())
-  dataDeRecisao DateTime? 
-  empregado      Empregado @relation(fields: [empregadoId], references: [id])
+  empregado_id     String    @unique
+  data_de_admissao DateTime  @default(now())
+  data_de_recisao  DateTime?
+  empregado        Empregado @relation(fields: [empregado_id], references: [id])
 
-  @@map("historicoEmpregado")
+  @@map("historico_empregado")
 }

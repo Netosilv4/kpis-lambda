@@ -12,10 +12,9 @@ export const handleLogin = async (body: any) => {
         },
       });
     if(!user) return ApiError.notFound("Usuario não encontrado");
-    if(!["Diretor", "Supervisor"].includes(user.cargo)) return ApiError.unauthorized("Não autorizado");
     const token = generateToken(user);
     return { 
       ...user,
       token
-      };
+    };
 }
