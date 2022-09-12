@@ -1,19 +1,25 @@
+import { HistoricoEmpregado } from '@prisma/client';
 import { Prisma } from '../../database';
 import { ApiError } from '../../errors/ApiError';
 
-export const headCountChartHandler = async (body: any) => {
+interface ChartData {
+
+}
+
+export const headCountChartHandler = async (body: any, params: any) => {
     if(!body.user) ApiError.unauthorized("Token inválido");
-    const { cargo, email, emailGestor } = body.user;
+    const { cargo } = body.user;
+    const { mes, ano } = params;
     let query = {}
-    const start = new Date(2022, 9, 1);
-    const finish = new Date(2022, 12, 15);
+    const start = new Date(Number(ano), Number(mes - 1), 1);
+    const end = new Date(Number(ano), Number(mes - 1) + 1, 0);
     if(cargo === "Diretor") {
         query = {
             where: {
                 OR: [
                     {
                         dataDeRecisao: {
-                            lt: finish,
+                            lt: end,
                             gt: start
                         }
                     },
@@ -22,42 +28,50 @@ export const headCountChartHandler = async (body: any) => {
                             equals: null,
                         },
                         dataDeAdmissao: {
-                            lt: finish,
+                            lt: end,
                         }
                     }
-                ] 
+                ]
             },
         }
     }
-    const chartData = await Prisma.historicoEmpregado.findMany(query);
-    const dates = [];
-    while(start <= finish) {
-        dates.push({
-            day: start.getDate(),
-            month: start.getMonth(),
-            year: start.getFullYear(),
-            count: 0,
+    const chartData = await Prisma.historicoEmpregado.findMany({
+        ...query,
+        orderBy: {
+            dataDeAdmissao: 'asc'
+        }
+    });
+    const days = []
+    console.log("end", end)
+    console.log("start", start)
+    let recisoesMes: HistoricoEmpregado [] = chartData.filter((item) => item.dataDeRecisao && item.dataDeRecisao.getTime() <= end.getTime());
+    let admissoesMes: HistoricoEmpregado [] = chartData.filter((item) => item.dataDeAdmissao.getTime() <= end.getTime() && item.dataDeAdmissao > start);
+    for(let i = start; i <= end; i = new Date(i.setDate(i.getDate() + 1))) {
+        days.push({
+            x: new Date(i),
+            y: chartData.filter((item) => item.dataDeAdmissao.getTime() <= start.getTime() && (!item.dataDeRecisao || item.dataDeRecisao.getTime() >= end.getTime())).length,
         });
-        start.setDate(start.getDate() + 1);
     }
-    // chartData.forEach((data) => {
-    //     const dayAdmissao = data.dataDeAdmissao.getDate();
-    //     const dayRecisao = data.dataDeRecisao ? data.dataDeRecisao.getDate() : null
-    //     if(data.dataDeAdmissao > firstDayOfMonth) {
-    //         days.forEach((day, index) => {
-    //             if(index >= dayAdmissao) {
-    //                 days[index].count += 1;
-    //             }
-    //         })
-    //     }
-    //     if(dayRecisao) {
-    //         days.forEach((day, index) => {
-    //             if(index >= dayRecisao) {
-    //                 days[index].count -= 1;
-    //             }
-    //         })
-    //     }
-    // })
-
-    return dates;
+    days.forEach((day) => {
+        const recisoesDia = chartData.filter((data) => data.dataDeRecisao && (data.dataDeRecisao.getTime() <= day.x.getTime()));
+        const admissoesDia = chartData.filter((data) => data.dataDeAdmissao < day.x && data.dataDeAdmissao.getTime() > start.getTime());
+        if(recisoesDia.length) day.y -= recisoesDia.length
+        if(admissoesDia.length) day.y += admissoesDia.length
+    })
+    return {
+        chartData: {
+            id: "headCount",
+            color: "hsl(174, 70%, 50%)",
+            data: [
+                ...days.map((item) => ({
+                    x: item.x.getDate(),
+                    y: item.y,
+                }))
+            ],
+        },
+        generalData: {
+            recisoesMes,
+            admissoesMes,
+        }
+    }
 };
