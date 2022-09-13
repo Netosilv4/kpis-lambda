@@ -1,49 +1,46 @@
-import { HistoricoEmpregado } from '@prisma/client';
 import { headCountChartQuery } from '../../database/querys';
 import { ApiError } from '../../errors/ApiError';
-
+import moment from 'moment'
+import { isBetweenMonth } from '../../utils/dateFormater';
+moment.locale('pt-br');
 
 export const headCountChartHandler = async (body: any, params: any) => {
     if(!body.user) ApiError.unauthorized("Token inválido");
     const {  email } = body.user;
-    const { mes, ano } = params;
-    const start = new Date(Number(ano), Number(mes), 1, 0);
-    const end = new Date(Number(ano), Number(mes) + 1, 0);
-    const chartData = await headCountChartQuery(email, start, end)
+    const { ano } = params;
+    const start = moment().utc().year(ano).startOf('year');
+    const end = moment().utc().year(ano).endOf('year');
 
-    let recisoesMes: HistoricoEmpregado [] = chartData.filter((item) => item.data_de_recisao && item.data_de_recisao.getTime() <= end.getTime());
-    let admissoesMes: HistoricoEmpregado [] = chartData.filter((item) => item.data_de_admissao.getTime() <= end.getTime() && item.data_de_admissao > start);
+    const chartData = await headCountChartQuery(email, start.toDate(), end.toDate())
+
+    const totalEmpregadosInicio = chartData.filter((item) => moment(item.data_de_admissao).isBefore(start)).length
     
-    const totalEmpregadosInicio = chartData.filter((item) => item.data_de_admissao.getTime() <= start.getTime() && (!item.data_de_recisao || item.data_de_recisao.getTime() >= end.getTime())).length
-    const totalEmpregadosFim = totalEmpregadosInicio + admissoesMes.length - recisoesMes.length;
-    const balancoGeral = ((totalEmpregadosFim - totalEmpregadosInicio) / totalEmpregadosInicio * 100).toFixed(2);
-    
-    const days = []
-    for(let i = start; i <= end; i = new Date(i.setDate(i.getDate() + 1))) {
-        const recisoesDia = chartData.filter((data) => data.data_de_recisao && (data.data_de_recisao.getTime() <= i.getTime()));
-        const admissoesDia = chartData.filter((data) => data.data_de_admissao.getTime() < i.getTime() && data.data_de_admissao.getTime() > start.getTime());
-        days.push({
-            x: new Date(i),
-            y: totalEmpregadosInicio + admissoesDia.length - recisoesDia.length,
-        });
+    const months = [];
+    for(let i = moment.utc().year(ano).startOf('year'); i.isBefore(moment.utc().year(ano).endOf('year')); i.add(1, 'month')) {
+        const recisoesMes = chartData.filter((item) => item.data_de_recisao && moment(item.data_de_recisao).utc().isBefore(i.endOf("month"))).length
+        const admissoesMes = chartData.filter((item) => moment(item.data_de_admissao).isAfter(start) && moment(item.data_de_admissao).utc().isBefore(i.endOf("month"))).length
+        months.push({
+            x: i.format('MMMM'),
+            y: totalEmpregadosInicio + admissoesMes - recisoesMes
+        })
     }
+    
+    const totalEmpregadosFim = months[months.length - 1].y
+    const balancoGeral = ((totalEmpregadosFim - totalEmpregadosInicio) / totalEmpregadosInicio * 100).toFixed(2);
+    const recisoesTotais = chartData.filter((item) => moment(item.data_de_recisao).isBefore(end)).length
+    const admissoesTotais = chartData.filter((item) => moment(item.data_de_admissao).isAfter(start)).length
 
     return {
         chartData: {
             id: "Headcount",
-            data: [
-                ...days.map((item) => ({
-                    x: item.x.getDate(),
-                    y: item.y,
-                }))
-            ],
+            data: months
         },
         generalData: {
-            recisoesMes,
-            admissoesMes,
-            totalEmpregadosInicio,
-            totalEmpregadosFim,
-            balancoGeral,
+            totalEmpregadosInicio: totalEmpregadosInicio,
+            balancoGeral: balancoGeral,
+            totalEmpregadosFim: totalEmpregadosFim,
+            recisoesTotais,
+            admissoesTotais
         }
     }
 };
@@ -52,44 +49,41 @@ export const headCountChartHandler = async (body: any, params: any) => {
 export const turnoverChartHandler = async (body: any, params: any) => {
     if(!body.user) ApiError.unauthorized("Token inválido");
     const {  email } = body.user;
-    const { mes, ano } = params;
-    const start = new Date(Number(ano), Number(mes), 1, 0);
-    const end = new Date(Number(ano), Number(mes) + 1, 0);
-    const chartData = await headCountChartQuery(email, start, end)
+    const { ano } = params;
+    moment.locale('pt-br');
+    const start = moment().utc().year(ano).startOf('year');
+    const end = moment().utc().year(ano).endOf('year');
 
-    let recisoesMes: HistoricoEmpregado [] = chartData.filter((item) => item.data_de_recisao && item.data_de_recisao.getTime() <= end.getTime());
-    let admissoesMes: HistoricoEmpregado [] = chartData.filter((item) => item.data_de_admissao.getTime() <= end.getTime() && item.data_de_admissao > start);
-    const totalEmpregadosInicio = chartData.filter((item) => item.data_de_admissao.getTime() <= start.getTime() && (!item.data_de_recisao || item.data_de_recisao.getTime() >= end.getTime())).length
-    const totalEmpregadosFim = totalEmpregadosInicio + admissoesMes.length - recisoesMes.length;
-    const days = []
+    const chartData = await headCountChartQuery(email, start.toDate(), end.toDate())
 
-    for(let i = start; i <= end; i = new Date(i.setDate(i.getDate() + 1))) {
-        const recisoesDia = chartData.filter((data) => data.data_de_recisao && (data.data_de_recisao.getTime() <= i.getTime())).length
-        const admissoesDia = chartData.filter((data) => data.data_de_admissao.getTime() < i.getTime() && data.data_de_admissao.getTime() > start.getTime()).length;
-        days.push({
-            x: new Date(i),
-            y: (recisoesDia / (totalEmpregadosInicio + admissoesDia - recisoesDia) * 100).toFixed(2),
+    const totalEmpregadosInicio = chartData.filter((item) => moment(item.data_de_admissao).isBefore(start)).length
+   
+    const months = []
+
+    for(let i = moment.utc().year(ano).startOf('year'); i.isBefore(moment.utc().year(ano).endOf('year')); i.add(1, 'month')) {
+        const recisoesMes = chartData.filter((item) => item.data_de_recisao && isBetweenMonth(item.data_de_recisao, i)).length
+        const admissoesMes = chartData.filter((item) => isBetweenMonth(item.data_de_admissao, i)).length
+        const empregadosMesInicio = chartData.filter((item) => moment(item.data_de_admissao).isBefore(i.startOf("month")) && (!item.data_de_recisao || moment(item.data_de_recisao).isAfter(i.startOf("month")))).length
+        months.push({
+            x: i.format('MMMM'),
+            y: (recisoesMes / (empregadosMesInicio + admissoesMes - recisoesMes) * 100).toFixed(2),
         });
     }
 
-    const balancoMes = admissoesMes.length - recisoesMes.length;
-    const balancoGeral = (recisoesMes.length / (totalEmpregadosInicio + balancoMes) * 100).toFixed(2);
+    const recisoesTotais = chartData.filter((item) => moment(item.data_de_recisao).isBefore(end)).length
+    const admissoesTotais = chartData.filter((item) => moment(item.data_de_admissao).isAfter(start)).length
+    const balancoMes = admissoesTotais - recisoesTotais;
+    const balancoGeral = (recisoesTotais / (totalEmpregadosInicio + balancoMes) * 100).toFixed(2);
 
     return {
         chartData: {
             id: "Turnover",
-            data: [
-                ...days.map((item) => ({
-                    x: item.x.getDate(),
-                    y: item.y,
-                }))
-            ],
+            data: months
         },
         generalData: {
             totalEmpregadosInicio,
-            totalEmpregadosFim,
-            recisoesMes,
-            admissoesMes,
+            recisoesTotais,
+            admissoesTotais,
             balancoGeral,
         } 
     }

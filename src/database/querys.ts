@@ -42,12 +42,9 @@ export const headCountChartQuery = async (email: string, start: Date, end: Date)
                 subordinates.data_de_admissao <= ${end}
             and 
                 (
-                    (
-                        subordinates.data_de_recisao <= ${end} 
-                            and 
-                        subordinates.data_de_recisao >= ${start}
-                    )
-                    or subordinates.data_de_recisao is null
+                    subordinates.data_de_recisao >= ${start}
+                        or 
+                    subordinates.data_de_recisao is null
                 )
     `
     return data
