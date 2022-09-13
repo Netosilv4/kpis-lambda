@@ -6,9 +6,8 @@ import { errorMiddleware } from './middlewares/errorHandler';
 import chartRoutes from './modules/charts/routes';
 import multer from 'multer';
 import { populateHandler } from './modules/populate';
-import rescue from 'express-rescue';
 
-const upload = multer({ dest: 'temp/uploads/' });
+const upload = multer({ dest: 'tmp/uploads/' });
 
 const app = express();
 
