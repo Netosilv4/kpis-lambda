@@ -1,3 +1,4 @@
+
 import { parse } from 'csv-parse'
 import { Request, Response } from 'express'
 import fs from 'fs'
@@ -23,6 +24,8 @@ const formatRow = (rows: any) => {
   ))
   return data
 }
+
+// Este script foi utilizado apenas no inicio do projeto para parsear o csv e popular o banco de dados
 
 export const populateHandler = async (req: Request, res: Response) => {
   try {
