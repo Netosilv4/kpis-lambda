@@ -1,20 +1,21 @@
 import { headCountChartQuery } from '../../database/querys'
-import { ApiError } from '../../errors/ApiError'
 import moment from 'moment'
 import { getAdmissoesERecisoes } from '../../utils/chartData'
 import { isBetweenMonth } from '../../utils/dateFormater'
+import { Context } from '../../../context'
+import { validateChartBody, validateChartParams } from './validators'
 moment.locale('pt-br')
 
-export const headCountChartHandler = async (body: any, params: any) => {
-  if (!body.user) ApiError.unauthorized('Token inválido')
+export const headCountChartHandler = async (body: any, params: any, context: Context) => {
+  validateChartBody(body)
+  validateChartParams(params)
   const { ano } = params
   const { email } = body.user
-  if (!ano) ApiError.badRequest('Informe o ano para consulta')
 
   const start = moment().utc().year(ano).startOf('year')
   const end = moment().utc().year(ano).endOf('year')
 
-  const chartData = await headCountChartQuery(email, start.toDate(), end.toDate())
+  const chartData = await headCountChartQuery(email, start.toDate(), end.toDate(), context)
 
   const { admissoesTotais, recisoesTotais, totalEmpregadosFim, totalEmpregadosInicio } = getAdmissoesERecisoes(chartData, end, start)
 
@@ -48,18 +49,18 @@ export const headCountChartHandler = async (body: any, params: any) => {
   }
 }
 
-export const turnoverChartHandler = async (body: any, params: any) => {
-  if (!body.user) ApiError.unauthorized('Token inválido')
+export const turnoverChartHandler = async (body: any, params: any, context: Context) => {
+  validateChartBody(body)
+  validateChartParams(params)
   const { ano } = params
   const { email } = body.user
-  if (!ano) ApiError.badRequest('Informe o ano para consulta')
 
   moment.locale('pt-br')
 
   const start = moment().utc().year(ano).startOf('year')
   const end = moment().utc().year(ano).endOf('year')
 
-  const chartData = await headCountChartQuery(email, start.toDate(), end.toDate())
+  const chartData = await headCountChartQuery(email, start.toDate(), end.toDate(), context)
 
   const { admissoesTotais, recisoesTotais, totalEmpregadosFim, totalEmpregadosInicio } = getAdmissoesERecisoes(chartData, end, start)
 
