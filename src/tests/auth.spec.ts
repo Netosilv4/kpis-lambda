@@ -23,7 +23,7 @@ describe('Teste de autenticação', () => {
       prisma
     })
 
-    expect(response).toHaveProperty('dale')
+    expect(response).toHaveProperty('token')
 
     expect(response).toEqual({
       ...response,
