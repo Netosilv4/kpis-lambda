@@ -31,6 +31,24 @@ describe('Teste de autenticação', () => {
     })
   })
 
+  test('Retorna 400 quando não enviado body', async () => {
+    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
+
+    expect(
+      handleLogin(null, {
+        prisma
+      })
+    ).rejects.toBeInstanceOf(ApiError)
+
+    try {
+      await handleLogin(null, { prisma })
+    } catch (error: unknown) {
+      if (error instanceof ApiError) {
+        expect(error.statusCode).toBe(400)
+      }
+    }
+  })
+
   test('Retorna 400 quando não enviado o email', async () => {
     const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
     prisma.empregado.findFirst.mockResolvedValue(empregadoEmailValido)

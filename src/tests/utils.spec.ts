@@ -1,4 +1,4 @@
-import { mmDDYYYY } from '../utils/dateFormater'
+import { isANumber, mmDDYYYY } from '../utils/dateFormater'
 import { generateToken, validateToken } from '../utils/jwt'
 
 describe('Teste de funções utils', () => {
@@ -27,7 +27,7 @@ describe('Teste de funções utils', () => {
     expect(() => generateToken(body)).toThrow()
   })
 
-  test('JWT valida token com chave válida', () => {
+  test('JWT valida token com chave válida e retorna body correto', () => {
     const body = {
       id: 1,
       email: ''
@@ -36,6 +36,28 @@ describe('Teste de funções utils', () => {
 
     const decoded = validateToken(token)
 
-    expect(decoded).toEqual(expect.any(Object))
+    expect(decoded).toEqual({
+      id: 1,
+      email: '',
+      iat: expect.any(Number),
+      exp: expect.any(Number)
+    })
+  })
+
+  test('isANumber retorna resultado correto', () => {
+    const response = isANumber(1)
+    expect(response).not.toBe(0)
+  })
+
+  test('isANumber retorna 0 quando é um número do tipo "inifinity"', () => {
+    const numero = 1 / 0
+    const response = isANumber(numero)
+    expect(response).toBe(0)
+  })
+
+  test('isANumber retorna 0 quando é um número do tipo "NaN"', () => {
+    const numero = 'teste'
+    const response = isANumber(numero)
+    expect(response).toBe(0)
   })
 })
