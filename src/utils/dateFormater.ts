@@ -16,3 +16,9 @@ export const validateDate = (date: string) => {
 export const isBetweenMonth = (date: Date, month: Moment) => {
   return moment(date).isSameOrAfter(month.startOf('month')) && moment(date).isSameOrBefore(month.endOf('month'))
 }
+
+export const isANumber = (value: any) => {
+  if (isNaN(value)) return 0
+  if (!isFinite(value)) return 0
+  return value.toFixed(2)
+}

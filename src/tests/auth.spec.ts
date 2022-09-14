@@ -65,7 +65,7 @@ describe('Teste de autenticação', () => {
     }
   })
 
-  test('Retornar 401 quando o email é inválido', async () => {
+  test('Retorna 401 quando o email é inválido', async () => {
     const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
     prisma.empregado.findFirst.mockResolvedValue(empregadoEmailValido)
 
