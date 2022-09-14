@@ -67,6 +67,7 @@ Algumas das tecnologias utilizadas para a criação:
 - Certifique-se de ter o Serverless instalado no projeto ou globalmente https://www.serverless.com/
 - Rode "npm install" ou "yarn install" em ambos os projetos
 - Configure as variáveis de ambiente de acordo
+- As migrations para o banco de dados estão na pasta /prisma/migrations
 - Rode npx prisma generate para gerar o cliente prisma localmente
 - Para rodar a lambda localmente, você pode tanto rodar o comando "sls offline --httpPort <portaDeSuaPreferencia> ou usar o script que deixei pronto "npm run start-local"
 - Para rodar o frontend basta rodar "npm start" que ele será inicializado na porta 3000 (Certifique-se de que a porta esta liberada)
