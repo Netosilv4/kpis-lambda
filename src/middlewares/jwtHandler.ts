@@ -10,7 +10,6 @@ export const jwtHandler = async (req: Request, res: Response, next: NextFunction
     req.body.user = decoded
     next()
   } catch (err) {
-    console.log('Erro')
     ApiError.unauthorized('Token inválido')
   }
 }
