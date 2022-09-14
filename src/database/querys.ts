@@ -1,8 +1,8 @@
-import { HistoricoEmpregado } from "@prisma/client"
-import { Prisma } from "."
+import { HistoricoEmpregado } from '@prisma/client'
+import { Prisma } from '.'
 
 export const headCountChartQuery = async (email: string, start: Date, end: Date) => {
-    const data = Prisma.$queryRaw<HistoricoEmpregado[]>`
+  const data = Prisma.$queryRaw<HistoricoEmpregado[]>`
     WITH RECURSIVE subordinates AS (
                 select
                     id,
@@ -47,5 +47,5 @@ export const headCountChartQuery = async (email: string, start: Date, end: Date)
                     subordinates.data_de_recisao is null
                 )
     `
-    return data
+  return data
 }
