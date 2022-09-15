@@ -1,12 +1,11 @@
-import { headCountChartQuery } from '../../database/querys'
 import moment from 'moment'
 import { getAdmissoesERecisoes } from '../../utils/chartData'
 import { isBetweenMonth, isANumber } from '../../utils/dateFormater'
-import { Context } from '../../../context'
 import { validateChartBody, validateChartParams } from './validators'
+import ChartModel from './model'
 moment.locale('pt-br')
 
-export const headCountChartHandler = async (body: any, params: any, context: Context) => {
+export const headCountChartHandler = async (body: any, params: any) => {
   validateChartBody(body)
   validateChartParams(params)
   const { ano } = params
@@ -15,7 +14,7 @@ export const headCountChartHandler = async (body: any, params: any, context: Con
   const start = moment().utc().year(ano).startOf('year')
   const end = moment().utc().year(ano).endOf('year')
 
-  const chartData = await headCountChartQuery(email, start.toDate(), end.toDate(), context)
+  const chartData = await ChartModel.getChartData(email, start.toDate(), end.toDate())
 
   const { admissoesTotais, recisoesTotais, totalEmpregadosFim, totalEmpregadosInicio } = getAdmissoesERecisoes(chartData, end, start)
 
@@ -48,7 +47,7 @@ export const headCountChartHandler = async (body: any, params: any, context: Con
   }
 }
 
-export const turnoverChartHandler = async (body: any, params: any, context: Context) => {
+export const turnoverChartHandler = async (body: any, params: any) => {
   validateChartBody(body)
   validateChartParams(params)
   const { ano } = params
@@ -59,7 +58,7 @@ export const turnoverChartHandler = async (body: any, params: any, context: Cont
   const start = moment().utc().year(ano).startOf('year')
   const end = moment().utc().year(ano).endOf('year')
 
-  const chartData = await headCountChartQuery(email, start.toDate(), end.toDate(), context)
+  const chartData = await ChartModel.getChartData(email, start.toDate(), end.toDate())
 
   const { admissoesTotais, recisoesTotais, totalEmpregadosFim, totalEmpregadosInicio } = getAdmissoesERecisoes(chartData, end, start)
 

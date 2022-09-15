@@ -1,16 +1,12 @@
 import { ApiError } from '../../errors/ApiError'
 import { generateToken } from '../../utils/jwt'
+import AuthModel from './model'
 import { validateLogin } from './validators'
-import { Context } from '../../../context'
 
-export const handleLogin = async (body: any, context: Context) => {
+export const handleLogin = async (body: any) => {
   validateLogin(body)
-  const user = await context.prisma.empregado.findFirst({
-    where: {
-      email: body.email
-    }
-  })
-  if (!user) return ApiError.notFound('Usuario não encontrado')
+  const user = await AuthModel.findUser(body.email)
+  if (user === null) return ApiError.notFound('Usuario não encontradooo')
   const token = generateToken(user)
   return {
     ...user,

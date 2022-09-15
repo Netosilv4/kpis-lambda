@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
 import { ApiError } from '../errors/ApiError'
+import AuthModel from '../modules/auth/model'
 import { handleLogin } from '../modules/auth/services'
 
 const empregadoEmailValido = {
@@ -16,12 +15,8 @@ const empregadoEmailValido = {
 
 describe('Teste de autenticação', () => {
   test('Retorna empregado', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-    prisma.empregado.findFirst.mockResolvedValue(empregadoEmailValido)
-
-    const response = await handleLogin({ email: 'teste@teste.com.br' }, {
-      prisma
-    })
+    jest.spyOn(AuthModel, 'findUser').mockResolvedValueOnce(empregadoEmailValido)
+    const response = await handleLogin({ email: 'teste@teste.com.br' })
 
     expect(response).toHaveProperty('token')
 
@@ -32,16 +27,8 @@ describe('Teste de autenticação', () => {
   })
 
   test('Retorna 400 quando não enviado body', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-
-    expect(
-      handleLogin(null, {
-        prisma
-      })
-    ).rejects.toBeInstanceOf(ApiError)
-
     try {
-      await handleLogin(null, { prisma })
+      await handleLogin(null)
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         expect(error.statusCode).toBe(400)
@@ -50,15 +37,8 @@ describe('Teste de autenticação', () => {
   })
 
   test('Retorna 400 quando não enviado o email', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-    prisma.empregado.findFirst.mockResolvedValue(empregadoEmailValido)
-
-    expect(
-      handleLogin({ email: '' }, { prisma })
-    ).rejects.toBeInstanceOf(ApiError)
-
     try {
-      await handleLogin({ email: '' }, { prisma })
+      await handleLogin({ email: '' })
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         expect(error.statusCode).toBe(400)
@@ -66,16 +46,11 @@ describe('Teste de autenticação', () => {
     }
   })
 
-  test('Retorna 404 quando não encontra do usuario', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-    prisma.empregado.findFirst.mockResolvedValue(null)
-
-    expect(
-      handleLogin({ email: 'testeVazio@email.com' }, { prisma })
-    ).rejects.toBeInstanceOf(ApiError)
+  test('Retorna 404 quando não encontrado usuario', async () => {
+    jest.spyOn(AuthModel, 'findUser').mockResolvedValueOnce(null)
 
     try {
-      await handleLogin({ email: 'netos2@teste.com' }, { prisma })
+      await handleLogin({ email: 'netos2@teste.com' })
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         expect(error.statusCode).toBe(404)
@@ -84,15 +59,8 @@ describe('Teste de autenticação', () => {
   })
 
   test('Retorna 401 quando o email é inválido', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-    prisma.empregado.findFirst.mockResolvedValue(empregadoEmailValido)
-
-    expect(
-      handleLogin({ email: 'testeInvalido' }, { prisma })
-    ).rejects.toBeInstanceOf(ApiError)
-
     try {
-      await handleLogin({ email: '' }, { prisma })
+      await handleLogin({ email: '' })
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         expect(error.statusCode).toBe(400)

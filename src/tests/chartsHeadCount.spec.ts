@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client'
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended'
+import { ChartDataResponse } from '../database/querys'
 import { ApiError } from '../errors/ApiError'
+import ChartModel from '../modules/charts/model'
 import { headCountChartHandler } from '../modules/charts/services'
 import { chartDataMock, responseHeadcountMock } from '../utils/jest'
 
@@ -19,34 +19,21 @@ const bodyUser = {
 
 describe('Teste geração de dados para o gráfico de headcount', () => {
   test('Deve retornar os dados para o gráfico', async () => {
-    const prismaMock = mockDeep<PrismaClient>()
-    prismaMock.$queryRaw.mockResolvedValueOnce(chartDataMock)
+    jest.spyOn(ChartModel, 'getChartData').mockReturnValueOnce(chartDataMock as unknown as Promise<ChartDataResponse[]>)
 
     const response = await headCountChartHandler({
       user: bodyUser
     },
     {
       ano: 2022
-    },
-    {
-      prisma: prismaMock
-    }
-    )
+    })
 
     expect(response).toEqual(responseHeadcountMock)
   })
 
   test('Deve retornar 401 quando não encontrar o usuario', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-
-    expect(
-      headCountChartHandler(null, null, {
-        prisma
-      })
-    ).rejects.toBeInstanceOf(ApiError)
-
     try {
-      await headCountChartHandler(null, null, { prisma })
+      await headCountChartHandler(null, null)
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         expect(error.statusCode).toBe(401)
@@ -55,8 +42,6 @@ describe('Teste geração de dados para o gráfico de headcount', () => {
   })
 
   test('Deve retornar 400 quando não enviar periodo para consulta', async () => {
-    const prisma: DeepMockProxy<PrismaClient> = mockDeep<PrismaClient>()
-
     const params = [
       {
         user: bodyUser
@@ -66,11 +51,11 @@ describe('Teste geração de dados para o gráfico de headcount', () => {
       }
     ]
     expect(
-      headCountChartHandler(params[0], params[1], { prisma })
+      headCountChartHandler(params[0], params[1])
     ).rejects.toBeInstanceOf(ApiError)
 
     try {
-      await headCountChartHandler(params[0], params[1], { prisma })
+      await headCountChartHandler(params[0], params[1])
     } catch (error: unknown) {
       if (error instanceof ApiError) {
         expect(error.statusCode).toBe(400)

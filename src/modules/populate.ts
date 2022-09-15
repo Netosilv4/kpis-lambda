@@ -25,7 +25,7 @@ const formatRow = (rows: any) => {
   return data
 }
 
-// Este script foi utilizado apenas no inicio do projeto para parsear o csv e popular o banco de dados
+// Este script foi utilizado apenas no inicio do projeto para parsear o csv e popular o banco de dadose não esta mais sendo utilizado
 
 export const populateHandler = async (req: Request, res: Response) => {
   try {

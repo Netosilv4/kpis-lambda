@@ -1,4 +1,5 @@
-import { isANumber, mmDDYYYY } from '../utils/dateFormater'
+import moment from 'moment'
+import { isANumber, isBetweenMonth, mmDDYYYY } from '../utils/dateFormater'
 import { generateToken, validateToken } from '../utils/jwt'
 
 describe('Teste de funções utils', () => {
@@ -59,5 +60,12 @@ describe('Teste de funções utils', () => {
     const numero = 'teste'
     const response = isANumber(numero)
     expect(response).toBe(0)
+  })
+
+  test('isBetweenMonth retorna verdadeiro para mes entre', () => {
+    const month = moment('2021-01-01').toDate()
+    const date = moment('2021-01-15')
+    const response = isBetweenMonth(month, date)
+    expect(response).toBeTruthy()
   })
 })
