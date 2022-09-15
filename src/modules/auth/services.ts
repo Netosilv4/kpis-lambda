@@ -6,7 +6,7 @@ import { validateLogin } from './validators'
 export const handleLogin = async (body: any) => {
   validateLogin(body)
   const user = await AuthModel.findUser(body.email)
-  if (user === null) return ApiError.notFound('Usuario não encontradooo')
+  if (!user) return ApiError.notFound('Usuario não encontrado')
   const token = generateToken(user)
   return {
     ...user,
